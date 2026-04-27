@@ -8,7 +8,7 @@ def search_internal_docs(query: str) -> str:
     Utilise cet outil pour répondre à des questions sur les données internes.
     """
     vectorstore = load_vectorstore()
-    results = vectorstore.similarity_search(query, k=4)
+    results = vectorstore.similarity_search(query, k=6)
     
     if not results:
         return "Aucun document pertinent trouvé."

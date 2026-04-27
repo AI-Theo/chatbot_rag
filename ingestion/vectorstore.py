@@ -9,7 +9,7 @@ CHROMA_PATH = "./chroma_db"
 
 def build_vectorstore() -> Chroma:
     docs = load_all("./data")
-    embeddings = OpenAIEmbeddings()
+    embeddings = OpenAIEmbeddings(model="text-embedding-3-large")
     vectorstore = Chroma.from_documents(
         documents=docs,
         embedding=embeddings,
@@ -20,7 +20,7 @@ def build_vectorstore() -> Chroma:
 
 def load_vectorstore() -> Chroma:
     """Charge un vector store existant."""
-    embeddings = OpenAIEmbeddings()
+    embeddings = OpenAIEmbeddings(model="text-embedding-3-large")
     return Chroma(
         persist_directory=CHROMA_PATH,
         embedding_function=embeddings
