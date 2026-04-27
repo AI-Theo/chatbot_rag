@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Hagbot Assistant</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f0f2f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .chat-container {
+      width: 780px;
+      height: 90vh;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.1);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .chat-header {
+      background: #1a56db;
+      color: white;
+      padding: 20px 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .chat-header .logo {
+      font-size: 24px;
+    }
+
+    .chat-header h1 {
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .chat-header p {
+      font-size: 12px;
+      opacity: 0.8;
+    }
+
+    .reset-btn {
+      margin-left: auto;
+      background: rgba(255,255,255,0.2);
+      border: none;
+      color: white;
+      padding: 6px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+
+    .reset-btn:hover { background: rgba(255,255,255,0.3); }
+
+    .messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .message {
+      display: flex;
+      gap: 10px;
+      max-width: 85%;
+      animation: fadeIn 0.2s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .message.user {
+      align-self: flex-end;
+      flex-direction: row-reverse;
+    }
+
+    .avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    .message.bot .avatar  { background: #e8f0fe; }
+    .message.user .avatar { background: #1a56db; }
+
+    .bubble {
+      padding: 12px 16px;
+      border-radius: 12px;
+      font-size: 14px;
+      line-height: 1.6;
+      white-space: pre-wrap;
+    }
+
+    .message.bot .bubble {
+      background: #f8f9fa;
+      border: 1px solid #e9ecef;
+      border-top-left-radius: 2px;
+      color: #212529;
+    }
+
+    .message.user .bubble {
+      background: #1a56db;
+      color: white;
+      border-top-right-radius: 2px;
+    }
+
+    .typing .bubble {
+      background: #f8f9fa;
+      border: 1px solid #e9ecef;
+      color: #868e96;
+      font-style: italic;
+    }
+
+    .input-area {
+      padding: 16px 24px;
+      border-top: 1px solid #e9ecef;
+      display: flex;
+      gap: 10px;
+    }
+
+    .input-area input {
+      flex: 1;
+      padding: 12px 16px;
+      border: 1px solid #dee2e6;
+      border-radius: 10px;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .input-area input:focus { border-color: #1a56db; }
+
+    .input-area button {
+      background: #1a56db;
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 18px;
+      transition: background 0.2s;
+    }
+
+    .input-area button:hover { background: #1648c0; }
+    .input-area button:disabled { background: #adb5bd; cursor: not-allowed; }
+  </style>
+</head>
+<body>
+  <div class="chat-container">
+    <div class="chat-header">
+      <div>
+        <h1>Hagbot Assistant</h1>
+        <p>Powered by internal data</p>
+      </div>
+      <button class="reset-btn" onclick="resetChat()">🔄 Nouvelle conversation</button>
+    </div>
+
+    <div class="messages" id="messages">
+      <div class="message bot">
+        <div class="bubble">Bonjour ! Je suis Hagbot, votre assistant interne entreprise.
+Posez-moi une question sur vos produits, tarifs ou documentation technique.</div>
+      </div>
+    </div>
+
+    <div class="input-area">
+      <input
+        type="text"
+        id="input"
+        placeholder="Posez votre question..."
+        onkeydown="if(event.key==='Enter') sendMessage()"
+      />
+      <button id="send-btn" onclick="sendMessage()">➤</button>
+    </div>
+  </div>
+
+  <script>
+    async function sendMessage() {
+        const input = document.getElementById('input');
+        const question = input.value.trim();
+        if (!question) return;
+
+        addMessage(question, 'user');
+        input.value = '';
+        setLoading(true);
+
+        try {
+            const res = await fetch('/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ question })
+            });
+            const data = await res.json();
+
+            addMessage(data.response, 'bot');
+
+            if (data.sources) {
+            addSources(data.sources);
+            }
+
+        } catch (e) {
+            addMessage("❌ Erreur de connexion à l'API.", 'bot');
+        } finally {
+            setLoading(false);
+        }
+        }
+
+    function addSources(sourcesText) {
+        const messages = document.getElementById('messages');
+        const div = document.createElement('div');
+        div.className = 'message bot';
+        div.innerHTML = `
+            <div class="avatar" style="opacity:0"></div>
+            <div class="bubble" style="
+            background: #f0f7ff;
+            border: 1px solid #bdd7f5;
+            font-size: 12px;
+            color: #555;
+            padding: 8px 14px;
+            ">${sourcesText.replace(/\n/g, '<br/>')}</div>
+        `;
+        messages.appendChild(div);
+        messages.scrollTop = messages.scrollHeight;
+        }
+
+    function addMessage(text, role) {
+      const messages = document.getElementById('messages');
+      const div = document.createElement('div');
+      div.className = `message ${role}`;
+      div.innerHTML = `
+        <div class="avatar">${role === 'bot' ? '🤖' : '👤'}</div>
+        <div class="bubble">${text}</div>
+      `;
+      messages.appendChild(div);
+      messages.scrollTop = messages.scrollHeight;
+    }
+
+    function setLoading(loading) {
+      const btn = document.getElementById('send-btn');
+      const messages = document.getElementById('messages');
+      btn.disabled = loading;
+
+      const typingId = 'typing-indicator';
+      if (loading) {
+        const div = document.createElement('div');
+        div.className = 'message bot typing';
+        div.id = typingId;
+        div.innerHTML = '<div class="avatar">🤖</div><div class="bubble">Hagbot réfléchit...</div>';
+        messages.appendChild(div);
+        messages.scrollTop = messages.scrollHeight;
+      } else {
+        document.getElementById(typingId)?.remove();
+      }
+    }
+
+    async function resetChat() {
+      await fetch('/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question: '', reset: true })
+      });
+      document.getElementById('messages').innerHTML = `
+        <div class="message bot">
+          <div class="bubble">Conversation réinitialisée. Comment puis-je vous aider ?</div>
+        </div>`;
+    }
+  </script>
+</body>
+</html>
