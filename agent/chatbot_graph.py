@@ -47,11 +47,14 @@ graph.set_entry_point("llm")
 graph.add_conditional_edges("llm", should_continue)
 graph.add_edge("tools", "llm")
 
-chatbot_agent = graph.compile()
+chatbot_agent = graph.compile(checkpointer=None)
 
 def ask_chatbot(question: str, history: list = []) -> str:
     messages = history + [HumanMessage(content=question)]
-    result = chatbot_agent.invoke({"messages": messages})
+    result = chatbot_agent.invoke(
+        {"messages": messages},
+        config={"recursion_limit": 5}
+    )
     full_response = result["messages"][-1].content
 
     if "Sources" in full_response:
