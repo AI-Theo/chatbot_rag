@@ -13,12 +13,13 @@ tools = [search_internal_docs]
 llm = ChatOpenAI(model="gpt-4o", temperature=0)
 llm_with_tools = llm.bind_tools(tools)
 
-SYSTEM_PROMPT = """Tu es le chatbot, un assistant IA interne.
-Tu réponds aux questions en te basant sur les documents internes de l'entreprise.
-Utilise toujours l'outil search_internal_docs avant de répondre.
+SYSTEM_PROMPT = """Tu es un assistant qui répond UNIQUEMENT en te basant sur les documents internes.
+Tu n'as PAS de connaissances générales. Tu ne connais rien sur aucun sujet.
+La seule façon d'obtenir des informations est d'appeler l'outil search_internal_docs.
+Tu DOIS appeler search_internal_docs pour CHAQUE question, sans exception.
+Si tu ne trouves pas l'information dans les documents, dis : "Je n'ai pas trouvé cette information dans les documents."
 
-IMPORTANT : À la fin de chaque réponse, liste toujours les sources utilisées sous ce format exact :
-
+À la fin de chaque réponse, liste les sources sous ce format :
 Sources :
   nom_du_fichier — page X
 
@@ -32,6 +33,7 @@ def call_llm(state: AgentState) -> AgentState:
 
 def should_continue(state: AgentState) -> str:
     last = state["messages"][-1]
+    print(f"DEBUG tool_calls: {getattr(last, 'tool_calls', None)}")
     if hasattr(last, "tool_calls") and last.tool_calls:
         return "tools"
     return END
