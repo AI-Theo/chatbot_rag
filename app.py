@@ -170,7 +170,6 @@ with st.sidebar:
     <div style="font-size:0.78rem; color:#475569; font-family:'IBM Plex Mono',monospace;">
     Corpus juridique :<br>
     ⚖️ Code civil<br>
-    📋 Code du travail<br><br>
     Les réponses citent les articles<br>
     et pages sources.<br><br>
     ⚠️ Ne remplace pas un avocat.
