@@ -2,8 +2,8 @@ import streamlit as st
 from langchain_core.messages import HumanMessage, AIMessage
 
 st.set_page_config(
-    page_title="Chatbot RAG",
-    page_icon="🤖",
+    page_title="Assistant Juridique RAG",
+    page_icon="⚖️",
     layout="centered"
 )
 
@@ -145,33 +145,35 @@ except Exception as e:
 
 st.markdown("""
 <div class="chat-header">
-    <h1>⬡ RAG Chatbot</h1>
-    <p>Powered by GPT-4o · LangGraph · ChromaDB</p>
+    <h1>⚖️ Assistant Juridique</h1>
+    <p>Code civil · Code du travail · Powered by GPT-4o</p>
 </div>
 """, unsafe_allow_html=True)
 
 with st.sidebar:
     st.markdown("### Configuration")
-    
+
     if not BACKEND_LOADED:
         st.error(f"Erreur de chargement : {LOAD_ERROR}")
     else:
         st.success("Backend connecté")
-    
+
     st.markdown("---")
-    
+
     if st.button("🔄 Nouvelle conversation"):
         st.session_state.messages = []
         st.session_state.history = []
         st.rerun()
-    
+
     st.markdown("---")
     st.markdown("""
     <div style="font-size:0.78rem; color:#475569; font-family:'IBM Plex Mono',monospace;">
-    Ce chatbot répond aux questions<br>
-    à partir de vos documents internes.<br><br>
-    Formats supportés :<br>
-    📄 PDF · 📊 Excel
+    Corpus juridique :<br>
+    ⚖️ Code civil<br>
+    📋 Code du travail<br><br>
+    Les réponses citent les articles<br>
+    et pages sources.<br><br>
+    ⚠️ Ne remplace pas un avocat.
     </div>
     """, unsafe_allow_html=True)
 
@@ -192,8 +194,11 @@ for msg in st.session_state.messages:
 if not st.session_state.messages:
     st.markdown("""
     <div class="bot-msg" style="border-color:#1e3a5f; color:#94a3b8; font-style:italic;">
-    Bonjour ! Posez-moi une question sur vos documents internes.<br>
-    Je cite toujours mes sources.
+    Bonjour ! Je suis votre assistant juridique.<br>
+    Posez-moi une question sur le <strong style="color:#60a5fa;">Code civil</strong>
+    ou le <strong style="color:#60a5fa;">Code du travail</strong>.<br><br>
+    Je cite systématiquement les articles et les pages sources.<br>
+    <span style="font-size:0.78rem;opacity:0.6;">⚠️ Cet assistant ne remplace pas un conseil d'avocat.</span>
     </div>
     """, unsafe_allow_html=True)
 
@@ -204,7 +209,7 @@ with st.form(key="chat_form", clear_on_submit=True):
     with col1:
         user_input = st.text_input(
             label="Question",
-            placeholder="Posez votre question...",
+            placeholder="Ex : Quelles sont les conditions de validité d'un contrat ?",
             label_visibility="collapsed"
         )
     with col2:
@@ -212,9 +217,9 @@ with st.form(key="chat_form", clear_on_submit=True):
 
 if submitted and user_input.strip():
     question = user_input.strip()
-    
+
     st.session_state.messages.append({"role": "user", "content": question})
-    
+
     if not BACKEND_LOADED:
         st.session_state.messages.append({
             "role": "assistant",
@@ -222,25 +227,24 @@ if submitted and user_input.strip():
             "sources": None
         })
     else:
-        with st.spinner("Recherche dans les documents..."):
+        with st.spinner("Recherche dans les codes juridiques..."):
             try:
                 result = ask_chatbot(question, st.session_state.history)
-                
-                # Mise à jour de l'historique LangGraph
+
                 st.session_state.history.append(HumanMessage(content=question))
                 st.session_state.history.append(AIMessage(content=result["response"]))
-                
+
                 st.session_state.messages.append({
                     "role": "assistant",
                     "content": result["response"],
                     "sources": result.get("sources")
                 })
-                
+
             except Exception as e:
                 st.session_state.messages.append({
                     "role": "assistant",
                     "content": f"❌ Erreur : {str(e)}",
                     "sources": None
                 })
-    
+
     st.rerun()

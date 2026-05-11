@@ -8,8 +8,8 @@ def load_pdf(path: str) -> list[Document]:
     loader = PyPDFLoader(path)
     pages = loader.load()
     splitter = RecursiveCharacterTextSplitter(
-        chunk_size=800,
-        chunk_overlap=100
+        chunk_size=1500,
+        chunk_overlap=200
     )
     return splitter.split_documents(pages)
 
