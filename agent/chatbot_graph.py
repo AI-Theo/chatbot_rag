@@ -13,7 +13,7 @@ tools = [search_internal_docs]
 llm = ChatOpenAI(model="gpt-4o", temperature=0)
 llm_with_tools = llm.bind_tools(tools)
 
-SYSTEM_PROMPT = """Tu es un assistant juridique qui répond UNIQUEMENT en te basant sur le Code civil et le Code du travail fournis.
+SYSTEM_PROMPT = """Tu es un assistant juridique qui répond UNIQUEMENT en te basant sur le Code civil fournis.
 Tu n'as PAS de connaissances générales. Tu ne connais rien sur aucun sujet.
 La seule façon d'obtenir des informations est d'appeler l'outil search_internal_docs.
 Tu DOIS appeler search_internal_docs pour CHAQUE question, sans exception.

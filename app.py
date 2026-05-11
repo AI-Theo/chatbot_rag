@@ -146,7 +146,7 @@ except Exception as e:
 st.markdown("""
 <div class="chat-header">
     <h1>⚖️ Assistant Juridique</h1>
-    <p>Code civil · Code du travail · Powered by GPT-4o</p>
+    <p>Code civil · Powered by GPT-4o</p>
 </div>
 """, unsafe_allow_html=True)
 
@@ -194,8 +194,7 @@ if not st.session_state.messages:
     st.markdown("""
     <div class="bot-msg" style="border-color:#1e3a5f; color:#94a3b8; font-style:italic;">
     Bonjour ! Je suis votre assistant juridique.<br>
-    Posez-moi une question sur le <strong style="color:#60a5fa;">Code civil</strong>
-    ou le <strong style="color:#60a5fa;">Code du travail</strong>.<br><br>
+    Posez-moi une question sur le <strong style="color:#60a5fa;">Code civil</strong>.<br><br>
     Je cite systématiquement les articles et les pages sources.<br>
     <span style="font-size:0.78rem;opacity:0.6;">⚠️ Cet assistant ne remplace pas un conseil d'avocat.</span>
     </div>
