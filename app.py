@@ -1,5 +1,13 @@
+import html
+import logging
+
 import streamlit as st
 from langchain_core.messages import HumanMessage, AIMessage
+
+def safe(text: str) -> str:
+    """Échappe le HTML (évite l'injection de balises) et conserve les retours à la ligne."""
+    return html.escape(text or "").replace("\n", "<br>")
+
 
 st.set_page_config(
     page_title="Assistant Juridique RAG",
@@ -184,11 +192,11 @@ if "history" not in st.session_state:
 
 for msg in st.session_state.messages:
     if msg["role"] == "user":
-        st.markdown(f'<div class="role-label">Vous</div><div class="user-msg">{msg["content"]}</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="role-label">Vous</div><div class="user-msg">{safe(msg["content"])}</div>', unsafe_allow_html=True)
     else:
-        st.markdown(f'<div class="role-label">Assistant</div><div class="bot-msg">{msg["content"]}</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="role-label">Assistant</div><div class="bot-msg">{safe(msg["content"])}</div>', unsafe_allow_html=True)
         if msg.get("sources"):
-            st.markdown(f'<div class="sources-block">{msg["sources"]}</div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="sources-block">{html.escape(msg["sources"])}</div>', unsafe_allow_html=True)
 
 if not st.session_state.messages:
     st.markdown("""
@@ -238,10 +246,11 @@ if submitted and user_input.strip():
                     "sources": result.get("sources")
                 })
 
-            except Exception as e:
+            except Exception:
+                logging.exception("Erreur pendant ask_chatbot")
                 st.session_state.messages.append({
                     "role": "assistant",
-                    "content": f"❌ Erreur : {str(e)}",
+                    "content": "❌ Une erreur est survenue. Merci de réessayer dans un instant.",
                     "sources": None
                 })
 

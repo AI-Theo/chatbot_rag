@@ -12,11 +12,9 @@ chatbot_rag/
 ├── ingestion/
 │   ├── data_loader.py       # Chargement et découpage PDF / Excel
 │   └── vectorstore.py       # Création et chargement du vectorstore Chroma
-├── data/                    # Vos documents sources (PDF, Excel)
-├── chroma_db/               # Base vectorielle (générée automatiquement)
+├── data/                    # Vos documents sources (PDF, Excel) — non versionné
+├── chroma_db/               # Base vectorielle de démonstration (Code civil)
 ├── app.py                   # Interface Streamlit
-├── main.py                  # API FastAPI (optionnel)
-├── static/index.html        # Interface HTML pour FastAPI
 └── requirements.txt
 ```
 
@@ -35,11 +33,11 @@ chatbot_rag/
 
 ```bash
 # 1. Cloner le repo
-git clone https://github.com/TON_USERNAME/chatbot_rag.git
+git clone https://github.com/AI-Theo/chatbot_rag.git
 cd chatbot_rag
 
-# 2. Créer le venv avec Python 3.11
-/Users/theo/.pyenv/versions/3.11.9/bin/python -m venv .venv
+# 2. Créer le venv avec Python 3.11+
+python3.11 -m venv .venv
 
 # 3. Activer le venv
 source .venv/bin/activate        # Mac / Linux
@@ -67,15 +65,13 @@ data/
 
 ## Construire le vectorstore
 
-À faire à chaque fois que vous modifiez le contenu de `data/` (ajout, suppression ou remplacement de fichiers) :
+À faire à chaque fois que vous modifiez le contenu de `data/` (ajout, suppression ou remplacement de fichiers). L'ancienne base est supprimée automatiquement avant reconstruction :
 
 ```bash
-# Supprimer l'ancien vectorstore
-rm -rf chroma_db/
-
-# Reconstruire
 python -c "from ingestion.vectorstore import build_vectorstore; build_vectorstore()"
 ```
+
+> **Confidentialité** — la base vectorielle contient le texte des documents indexés. Ne commitez jamais une base construite à partir de documents confidentiels : seule la base de démonstration (Code civil, texte public) est versionnée.
 
 Vous devriez voir :
 ```
@@ -91,20 +87,6 @@ streamlit run app.py
 ```
 
 L'application s'ouvre sur `http://localhost:8501`
-
-## Lancer l'API FastAPI (optionnel)
-
-```bash
-uvicorn main:app --reload
-```
-
-L'API est disponible sur `http://localhost:8000`
-
-Endpoints :
-- `GET  /`         — interface HTML
-- `POST /chat`     — envoyer une question
-- `POST /ingest`   — relancer l'ingestion depuis `data/`
-- `GET  /health`   — statut de l'API
 
 ## Variables d'environnement
 
@@ -123,7 +105,6 @@ OPENAI_API_KEY=sk-...
 | Orchestration | LangGraph |
 | Vectorstore | ChromaDB |
 | Interface | Streamlit |
-| API | FastAPI |
 
 ## Formats supportés
 
@@ -132,19 +113,6 @@ OPENAI_API_KEY=sk-...
 | PDF | `.pdf` |
 | Excel | `.xlsx`, `.xls` |
 
-## .gitignore recommandé
-
-```
-.venv/
-__pycache__/
-*.pyc
-.env
-chroma_db/
-data/
-```
-
-> `chroma_db/` et `data/` sont exclus du versioning — le vectorstore se reconstruit en local, et les documents sources peuvent être confidentiels.
-
 ## Licence
 
-Projet privé — Tetria
+© Théo Algaze — Tetria. Code publié à titre de démonstration ; toute réutilisation nécessite un accord préalable.
